@@ -296,8 +296,6 @@ contract DSCEngine is ReentrancyGuard {
         _revertIfHealthFactorIsBroken(msg.sender);
     }
 
-    function getHealthFactor() external view {}
-
     //INTERNAL FUNCTIONS
     function _burnDSC(
         address onBehalfOf,
@@ -362,6 +360,7 @@ contract DSCEngine is ReentrancyGuard {
             uint256 totalDscMinted,
             uint256 collateralValueInUsd
         ) = _getAccountInformation(user);
+
         uint256 collateralAdustedForThreshold = (collateralValueInUsd *
             LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION; //50% of collateral value
         return ((collateralAdustedForThreshold * PRECISION) / totalDscMinted);
@@ -418,5 +417,20 @@ contract DSCEngine is ReentrancyGuard {
         return
             (usdAmountInWei * PRECISION) /
             (uint256(price) * ADDITIONAL_FEED_PRICISION); //amount would be in wei 1e18 and the price in 1e8 so make it unified for multiplication
+    }
+
+    function getAccountInformation(
+        address user
+    )
+        external
+        view
+        returns (uint256 totalDscMinted, uint256 collateralValueInUsd)
+    {
+        (totalDscMinted, collateralValueInUsd) = _getAccountInformation(user);
+    }
+
+    function getHealthFactor(address user) external view returns (uint256) {
+        uint256 healthFactor = _healthFactor(user);
+        return healthFactor;
     }
 }
