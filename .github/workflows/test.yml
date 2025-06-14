@@ -34,12 +34,13 @@ jobs:
 
       - name: Run Forge tests
         run: |
-          forge test -vvv
+          mkdir -p test-results
+          forge test -vvv --report test-results/report.txt
         id: test
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: out/test-results
+          path: test-results
           if-no-files-found: error
