@@ -35,7 +35,7 @@ jobs:
       - name: Run Forge tests
         run: |
           mkdir -p test-results
-          forge test -vvv --report test-results/report.txt
+          forge test -vvv > test-results/test-output.txt
         id: test
 
       - name: Upload test results
