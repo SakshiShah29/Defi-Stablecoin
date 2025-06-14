@@ -1,5 +1,7 @@
 # 🏦 Foundry DeFi Stablecoin System
 
+[![Test Coverage](https://img.shields.io/badge/Test%20Coverage-${COVERAGE}%25-brightgreen)](https://github.com/${GITHUB_REPOSITORY}/actions)
+
 Welcome to the **Decentralized Stable Coin (DSC) System** — a minimal, exogenously collateralized, algorithmic stablecoin protocol built with [Foundry](https://github.com/foundry-rs/foundry)! This project is inspired by DAI, but with a twist: **no governance, no fees, and only WETH & WBTC as collateral**.
 
 ---

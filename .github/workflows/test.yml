@@ -38,9 +38,31 @@ jobs:
           forge test -vvv > test-results/test-output.txt
         id: test
 
+      - name: Generate coverage report
+        run: |
+          forge coverage --report lcov
+          genhtml lcov.info -o coverage-report
+          echo "COVERAGE=$(grep -oP 'TOTAL.*?(\d+\.\d+)%' coverage-report/index.html | grep -oP '\d+\.\d+')" >> $GITHUB_ENV
+
       - name: Upload test results
         uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: test-results
           if-no-files-found: error
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage-report
+          if-no-files-found: error
+
+      - name: Update README with coverage
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: update test coverage badge"
+          file_pattern: README.md
+          branch: ${{ github.head_ref }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
