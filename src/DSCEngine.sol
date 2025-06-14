@@ -29,6 +29,7 @@ import {DecentralizedStableCoin} from "./DecentralizedStableCoin.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import {OracleLib} from "./libraries/OracleLib.sol";
 
 /*
  * @title DSCEngine
@@ -51,8 +52,6 @@ import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/Ag
  */
 
 contract DSCEngine is ReentrancyGuard {
-    //ERRORS
-
     //STATE VARIABLES
     uint256 private constant ADDITIONAL_FEED_PRICISION = 1e10; //10^10
     uint256 private constant PRECISION = 1e18; //10^18;
@@ -83,6 +82,9 @@ contract DSCEngine is ReentrancyGuard {
         uint256 minHealthFactor
     );
     error DSCEngine__HealthFactorNotImproved();
+
+    //TYPES
+    using OracleLib for AggregatorV3Interface;
 
     //EVENTS
     event CollateralDeposited(
@@ -399,7 +401,7 @@ contract DSCEngine is ReentrancyGuard {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(
             s_priceFeeds[token]
         );
-        (, int256 price, , , ) = priceFeed.latestRoundData();
+        (, int256 price, , , ) = priceFeed.staleCheckLatestRoundData();
         //1 ETH = $1000
         // The returned value from the chainlink would be 1000e8
         return
@@ -413,7 +415,7 @@ contract DSCEngine is ReentrancyGuard {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(
             s_priceFeeds[token]
         );
-        (, int256 price, , , ) = priceFeed.latestRoundData();
+        (, int256 price, , , ) = priceFeed.staleCheckLatestRoundData();
         return
             (usdAmountInWei * PRECISION) /
             (uint256(price) * ADDITIONAL_FEED_PRICISION); //amount would be in wei 1e18 and the price in 1e8 so make it unified for multiplication
@@ -448,5 +450,26 @@ contract DSCEngine is ReentrancyGuard {
 
     function getLiquidationPrecision() external pure returns (uint256) {
         return LIQUIDATION_PRECISION;
+    }
+
+    function getCollateralTokens() external view returns (address[] memory) {
+        return s_collateralTokens;
+    }
+
+    function getCollateralBalanceOfTheUser(
+        address user,
+        address token
+    ) external view returns (uint256) {
+        return s_collateralDeposited[user][token];
+    }
+
+    function getDscMintedByUser(address user) external view returns (uint256) {
+        return s_dscMinted[user];
+    }
+
+    function getCollateralTokenPriceFeed(
+        address token
+    ) external view returns (address) {
+        return s_priceFeeds[token];
     }
 }
