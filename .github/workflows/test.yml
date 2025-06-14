@@ -45,9 +45,18 @@ jobs:
 
       - name: Generate coverage report
         run: |
-          forge coverage --report lcov --ir-minimum
+          forge coverage --report lcov --ir-minimum > coverage.txt
           genhtml lcov.info -o coverage-report
           echo "COVERAGE=$(grep -oP 'TOTAL.*?(\d+\.\d+)%' coverage-report/index.html | grep -oP '\d+\.\d+')" >> $GITHUB_ENV
+
+      - name: Extract coverage table
+        run: |
+          awk '/┌/{flag=1} flag; /└/{flag=0}' coverage.txt > coverage-table.txt
+
+      - name: Insert coverage table into README
+        run: |
+          awk '/<!-- COVERAGE-TABLE-START -->/{print; system("cat coverage-table.txt"); skip=1} /<!-- COVERAGE-TABLE-END -->/{skip=0} !skip' README.md > README.new.md
+          mv README.new.md README.md
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
@@ -63,10 +72,10 @@ jobs:
           path: coverage-report
           if-no-files-found: error
 
-      - name: Update README with coverage
+      - name: Commit coverage table to README
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "docs: update test coverage badge"
+          commit_message: "docs: update coverage table in README"
           file_pattern: README.md
           branch: ${{ github.head_ref }}
         env:
